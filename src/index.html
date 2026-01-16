@@ -249,6 +249,8 @@
   var languages = {};
   var languageResourceGlobal = null;
   var languageResourceLocal  = null;
+  //Default language
+  var language = 'en';
 
   window.seamless.connect({container: 'div.main', allowStyleInjection: true});
   var mainElem = document.getElementById('main');
@@ -277,6 +279,11 @@
 
     // If the form is a string, then load it first and then try again.
     if (typeof form === 'string') {
+      //Extracting the language from the URL if present
+      const queryString = form.split('?')[1] || '';
+      const params = new URLSearchParams(queryString);
+      language = params.get('language') || language;
+
       var formio = new Formio(form);
       return formio.loadForm().then(function(formObj) {
         if (!submission && formio.submissionId) {
@@ -394,10 +401,10 @@
       }
 
       // Load translations before rendering the form
-      return loadLanguageResources('en').then(function(translations) {
+      return loadLanguageResources(language).then(function(translations) {
         // Add language option to form options
-        options.language = 'en';
-        options.i18n = { 'en': translations };
+        options.language = language;
+        options.i18n = { [language] : translations };
         
         // Continue with form rendering
         if (Array.isArray(submission) && submission.length) {
