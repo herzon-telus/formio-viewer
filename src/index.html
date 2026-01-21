@@ -251,6 +251,7 @@
   var languageResourceLocal  = null;
   //Default language
   var language = 'en';
+  var urlLanguage = null;
 
   window.seamless.connect({container: 'div.main', allowStyleInjection: true});
   var mainElem = document.getElementById('main');
@@ -279,11 +280,6 @@
 
     // If the form is a string, then load it first and then try again.
     if (typeof form === 'string') {
-      //Extracting the language from the URL if present
-      const queryString = form.split('?')[1] || '';
-      const params = new URLSearchParams(queryString);
-      language = params.get('language') || language;
-
       var formio = new Formio(form);
       return formio.loadForm().then(function(formObj) {
         if (!submission && formio.submissionId) {
@@ -369,6 +365,25 @@
   window.setForm = function(form, submission, options) {
     console.log('window.setForm...');
     options = options || {};
+
+    //Setting the language from the submission if it was not requested via the URL, and it is also stored in the submission.
+    //Extracting the language from the URL if present
+    if (typeof form === 'string') {
+      const queryString = form.split('?')[1] || '';
+      const params = new URLSearchParams(queryString);
+      urlLanguage = params.get('language');
+
+      if (urlLanguage != null) {
+        language = urlLanguage;
+      }
+    }
+    else {
+      if (urlLanguage == null) {
+        if (submission && submission.metadata && submission.metadata.language && submission.metadata.language.trim().length > 0) {
+          language = submission.metadata.language.trim();
+        }
+      }
+    }
 
     // Process form tags and set up language resources
     if (typeof form != 'string') {
